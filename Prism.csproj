@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Prism</AssemblyName>
+    <Version>1.0.0</Version>
+    <Product>Prism Crosshair</Product>
+    <Description>Настраиваемый прицел для Windows</Description>
+    <ApplicationIcon>Assets\Prism.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- WPF uses the manifest for DPI awareness. WinForms provides the tray and monitor APIs. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Prism.ico" />
+  </ItemGroup>
+</Project>
