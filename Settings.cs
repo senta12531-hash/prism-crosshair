@@ -11,8 +11,9 @@ public enum PlacementMode { ActiveMonitor, FixedMonitor }
 
 public sealed record Reticle
 {
+    private const string DefaultColor = "#FAFCFF";
     public ReticleShape Shape { get; init; } = ReticleShape.Cross;
-    public string Color { get; init; } = "#B6FFDB";
+    public string Color { get; init; } = DefaultColor;
     public int Length { get; init; } = 9;
     public int Gap { get; init; } = 5;
     public int Thickness { get; init; } = 2;
@@ -27,7 +28,7 @@ public sealed record Reticle
     public Reticle Normalize() => this with
     {
         Shape = Enum.IsDefined(Shape) ? Shape : ReticleShape.Cross,
-        Color = NormalizeColor(Color) ?? "#B6FFDB",
+        Color = NormalizeColor(Color) ?? DefaultColor,
         Length = Math.Clamp(Length, 1, 36),
         Gap = Math.Clamp(Gap, 0, 24),
         Thickness = Math.Clamp(Thickness, 1, 10),

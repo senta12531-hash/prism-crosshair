@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -14,6 +15,7 @@ internal static class Updates
 {
     private const string Repository = "senta12531-hash/prism-crosshair";
     internal const string AssetName = "Prism-win-x64.zip";
+    internal const string InstallerAssetName = "Prism-Setup-win-x64.exe";
     internal const string ReleasesUrl = "https://github.com/" + Repository + "/releases";
 
     internal static Version CurrentVersion { get; } =
@@ -22,7 +24,7 @@ internal static class Updates
 
     private static readonly HttpClient Client = new() { Timeout = TimeSpan.FromSeconds(12) };
 
-    internal sealed record Update(Version Version, Uri Download);
+    internal sealed record Update(Version Version, Uri Download, bool IsInstaller);
 
     internal static async Task<Update?> CheckAsync(CancellationToken cancellationToken)
     {
@@ -38,10 +40,11 @@ internal static class Updates
 
         await using var body = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var json = await JsonDocument.ParseAsync(body, cancellationToken: cancellationToken);
-        return ReadUpdate(json.RootElement, CurrentVersion);
+        var installed = File.Exists(Path.Combine(AppContext.BaseDirectory, "Prism.install"));
+        return ReadUpdate(json.RootElement, CurrentVersion, installed);
     }
 
-    internal static Update? ReadUpdate(JsonElement release, Version current)
+    internal static Update? ReadUpdate(JsonElement release, Version current, bool preferInstaller = false)
     {
         var tag = release.GetProperty("tag_name").GetString();
         if (!Version.TryParse(tag?.TrimStart('v', 'V'), out var version))
@@ -52,9 +55,11 @@ internal static class Updates
         if (version <= current)
             return null;
 
-        var asset = release.GetProperty("assets").EnumerateArray().FirstOrDefault(item =>
-            item.GetProperty("name").GetString() == AssetName &&
-            item.GetProperty("state").GetString() == "uploaded");
+        var assets = release.GetProperty("assets");
+        var asset = preferInstaller ? FindAsset(assets, InstallerAssetName) : default;
+        var isInstaller = asset.ValueKind != JsonValueKind.Undefined;
+        if (asset.ValueKind == JsonValueKind.Undefined)
+            asset = FindAsset(assets, AssetName);
         if (asset.ValueKind == JsonValueKind.Undefined)
             return null;
 
@@ -63,9 +68,13 @@ internal static class Updates
         return Uri.TryCreate(url, UriKind.Absolute, out var download) &&
             download.Scheme == Uri.UriSchemeHttps && download.Host == "github.com" &&
             download.AbsolutePath.StartsWith(expectedPrefix, StringComparison.OrdinalIgnoreCase)
-            ? new Update(version, download)
+            ? new Update(version, download, isInstaller)
             : null;
     }
+
+    private static JsonElement FindAsset(JsonElement assets, string filename) =>
+        assets.EnumerateArray().FirstOrDefault(item => item.GetProperty("name").GetString() == filename &&
+            item.GetProperty("state").GetString() == "uploaded");
 
     internal static void Open(string url) =>
         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });

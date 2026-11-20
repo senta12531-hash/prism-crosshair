@@ -12,7 +12,7 @@ namespace Prism;
 public partial class MainWindow
 {
     private static readonly string[] ShapeNames = { "Крест", "Т-форма", "Точка", "Кольцо", "Диагональ" };
-    private static readonly string[] Colors = { "#B6FFDB", "#F8F9FF", "#6DE3FF", "#B5A3FF", "#FF92AA", "#FFE493", "#ACFF61" };
+    private static readonly string[] Colors = { "#FAFCFF", "#B6FFDB", "#6DE3FF", "#A7B8FF", "#FF92AA", "#FFE493", "#ACFF61" };
 
     private static readonly Preset[] BuiltIns =
     {
@@ -27,13 +27,25 @@ public partial class MainWindow
     private readonly List<SliderBinding> _sliders = new();
     private readonly List<(Button Button, Preset Preset)> _presetButtons = new();
     private bool _synchronizing;
-    private int _zoom = 4;
+    private int _zoom = 2;
+    private (Button Button, FrameworkElement Panel)[] _tuningGroups = Array.Empty<(Button, FrameworkElement)>();
+    private Button? _activeTuning;
+    private string? _activePresetName;
 
     private void ConfigureEditor()
     {
         _synchronizing = true;
-        SceneBox.ItemsSource = new[] { "Сетка", "Светлый", "Тёмный" };
+        SceneBox.ItemsSource = new[] { "Контраст", "Сетка", "Светлый", "Тёмный" };
         SceneBox.SelectedIndex = 0;
+        _tuningGroups = new[]
+        {
+            (ShapeTool, (FrameworkElement)ShapeDetails),
+            (SizeTool, SizeDetails),
+            (ColorTool, ColorDetails),
+            (OutlineTool, OutlineDetails),
+            (PositionTool, PositionDetails)
+        };
+        SelectTuning(SizeTool);
 
         foreach (var shape in Enum.GetValues<ReticleShape>())
         {
@@ -62,7 +74,7 @@ public partial class MainWindow
         AddSlider(GeometrySliders, "Зазор", 0, 24, " px", r => r.Gap, (r, v) => r with { Gap = v }, SupportsArms);
         AddSlider(GeometrySliders, "Толщина", 1, 10, " px", r => r.Thickness, (r, v) => r with { Thickness = v }, r => r.Shape != ReticleShape.Dot);
         AddSlider(GeometrySliders, "Размер точки", 1, 14, " px", r => r.DotSize, (r, v) => r with { DotSize = v }, r => r.CenterDot || r.Shape == ReticleShape.Dot);
-        AddSlider(GeometrySliders, "Обводка", 1, 4, " px", r => r.OutlineWidth, (r, v) => r with { OutlineWidth = v }, r => r.Outline);
+        AddSlider(OutlineSliders, "Обводка", 1, 4, " px", r => r.OutlineWidth, (r, v) => r with { OutlineWidth = v }, r => r.Outline);
         AddSlider(ColorControls, "Непрозрачность", 10, 100, "%", r => r.Opacity, (r, v) => r with { Opacity = v });
         AddSlider(OffsetSliders, "По X", -100, 100, " px", r => r.OffsetX, (r, v) => r with { OffsetX = v });
         AddSlider(OffsetSliders, "По Y", -100, 100, " px", r => r.OffsetY, (r, v) => r with { OffsetY = v });
@@ -73,6 +85,36 @@ public partial class MainWindow
 
     private static bool SupportsArms(Reticle r) =>
         r.Shape is ReticleShape.Cross or ReticleShape.TShape or ReticleShape.Diagonal;
+
+    private void SelectTuning(Button? button)
+    {
+        _activeTuning = button;
+        foreach (var (item, panel) in _tuningGroups)
+        {
+            var expanded = item == button;
+            item.Tag = expanded ? "selected" : null;
+            AutomationProperties.SetItemStatus(item, expanded ? "Развёрнуто" : "Свёрнуто");
+            panel.Visibility = expanded ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+    private void TuningClick(object sender, RoutedEventArgs e)
+    {
+        var selected = (Button)sender;
+        SelectTuning(selected == _activeTuning ? null : selected);
+        if (_activeTuning == selected && Keyboard.FocusedElement == selected)
+            _tuningGroups.First(group => group.Button == selected).Panel.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+    }
+
+    private void WindowKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape || _activeTuning is not { } open || !EditorPanel.IsVisible)
+            return;
+
+        SelectTuning(null);
+        open.Focus();
+        e.Handled = true;
+    }
 
     private void AddSlider(Panel parent, string title, int minimum, int maximum, string units,
         Func<Reticle, int> read, Func<Reticle, int, Reticle> write, Func<Reticle, bool>? enabled = null)
@@ -104,7 +146,10 @@ public partial class MainWindow
     private void SetReticle(Reticle reticle)
     {
         if (reticle == _settings.Reticle)
+        {
+            RefreshEditor();
             return;
+        }
 
         _settings.Reticle = reticle;
         RefreshEditor();
@@ -122,8 +167,28 @@ public partial class MainWindow
         for (var i = 0; i < Palette.Children.Count; i++)
             ((Button)Palette.Children[i]).Tag = Colors[i] == reticle.Color ? "selected" : null;
 
-        foreach (var (button, preset) in _presetButtons)
-            button.Tag = reticle == preset.Reticle ? "selected" : null;
+        var matchingPreset = _presetButtons.FirstOrDefault(entry => reticle == entry.Preset.Reticle &&
+            entry.Preset.Name == _activePresetName);
+        if (matchingPreset.Button is null)
+            matchingPreset = _presetButtons.FirstOrDefault(entry => reticle == entry.Preset.Reticle);
+
+        foreach (var (button, _) in _presetButtons)
+            button.Tag = button == matchingPreset.Button ? "selected" : null;
+
+        ProfileCaption.Text = matchingPreset.Preset is { } active ? $"Профиль «{active.Name}»" : "Свой прицел";
+        ShapeValue.Text = ShapeNames[(int)reticle.Shape];
+        SizeValue.Text = reticle.Shape switch
+        {
+            ReticleShape.Dot => $"Точка {reticle.DotSize} px",
+            ReticleShape.Ring => $"Диаметр {reticle.Length} px",
+            _ => $"Длина {reticle.Length} px  ·  зазор {reticle.Gap} px"
+        };
+        ColorValue.Text = reticle.Color;
+        ColorValueSwatch.Fill = ReticleDrawing.Brush(reticle.Color);
+        OutlineValue.Text = reticle.Outline ? $"Включён  ·  {reticle.OutlineWidth} px" : "Выключен";
+        PositionValue.Text = reticle.OffsetX == 0 && reticle.OffsetY == 0
+            ? "Центр экрана"
+            : $"X {reticle.OffsetX:+0;-0;0}  /  Y {reticle.OffsetY:+0;-0;0}";
 
         foreach (var slider in _sliders)
         {
@@ -149,12 +214,10 @@ public partial class MainWindow
     private void RefreshPreview()
     {
         var reticle = _settings.Reticle;
-        PreviewShapeLabel.Text = ShapeNames[(int)reticle.Shape];
-        Coordinates.Text = $"X {reticle.OffsetX:+0;-0;0}  /  Y {reticle.OffsetY:+0;-0;0}";
         ZoomLabel.Text = $"{_zoom}×";
         ZoomOut.IsEnabled = _zoom > 1;
         ZoomIn.IsEnabled = _zoom < 6;
-        Preview.Refresh(reticle, SceneBox.SelectedIndex, _zoom);
+        Preview.Refresh(reticle, (PreviewScene)Math.Max(0, SceneBox.SelectedIndex), _zoom);
     }
 
     private void PreviewChanged(object sender, SelectionChangedEventArgs e)
@@ -177,11 +240,21 @@ public partial class MainWindow
 
     private void ResetClick(object sender, RoutedEventArgs e)
     {
+        _activePresetName = BuiltIns[0].Name;
         SetReticle(new Reticle());
         Notice.Text = "Параметры прицела сброшены.";
     }
-    private void DotClick(object sender, RoutedEventArgs e) => SetReticle(_settings.Reticle with { CenterDot = DotToggle.IsChecked == true });
-    private void OutlineClick(object sender, RoutedEventArgs e) => SetReticle(_settings.Reticle with { Outline = OutlineToggle.IsChecked == true });
+    private void DotChanged(object sender, RoutedEventArgs e)
+    {
+        if (!_synchronizing)
+            SetReticle(_settings.Reticle with { CenterDot = DotToggle.IsChecked == true });
+    }
+
+    private void OutlineChanged(object sender, RoutedEventArgs e)
+    {
+        if (!_synchronizing)
+            SetReticle(_settings.Reticle with { Outline = OutlineToggle.IsChecked == true });
+    }
 
     private void HexKeyDown(object sender, KeyEventArgs e)
     {
@@ -231,14 +304,14 @@ public partial class MainWindow
 
     private void AddPresetCard(Preset preset, bool custom)
     {
-        var layout = new Grid { Width = 136, Height = 66 };
-        layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(42) });
+        var layout = new Grid { Width = 183, Height = 77 };
+        layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(52) });
         layout.ColumnDefinitions.Add(new ColumnDefinition());
         var icon = new Border
         {
-            Width = 36, Height = 36, HorizontalAlignment = HorizontalAlignment.Left,
+            Width = 44, Height = 44, HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Center, CornerRadius = new CornerRadius(7),
-            Background = ReticleDrawing.Brush("#1B1C28"), Child = new PresetGlyph { Reticle = preset.Reticle }
+            Background = ReticleDrawing.Brush("#172237"), Child = new PresetGlyph { Reticle = preset.Reticle }
         };
         var copy = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(3, 0, 0, 0) };
         copy.Children.Add(new TextBlock { Text = preset.Name, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
@@ -249,13 +322,15 @@ public partial class MainWindow
         layout.Children.Add(copy);
         var button = new Button
         {
-            Content = layout, Padding = new Thickness(8, 0, 8, 0), VerticalAlignment = VerticalAlignment.Top,
-            Margin = new Thickness(0, 0, 7, 0), ToolTip = custom ? $"{preset.Name} · ПКМ для удаления" : preset.Name
+            Content = layout, Padding = new Thickness(11, 0, 11, 0), VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(0, 0, 9, 9), ToolTip = custom ? $"{preset.Name} · ПКМ для удаления" : preset.Name
         };
         AutomationProperties.SetName(button, $"Загрузить пресет {preset.Name}");
         button.Click += (_, _) =>
         {
+            _activePresetName = preset.Name;
             SetReticle(preset.Reticle);
+            ShowPage(EditorPanel, EditorTab);
             Notice.Text = $"Пресет «{preset.Name}» загружен.";
         };
         if (custom)
@@ -324,6 +399,7 @@ public partial class MainWindow
 
         if (dialog.ShowDialog() == true)
         {
+            _activePresetName = name.Text.Trim();
             BuildPresetCards();
             ((FrameworkElement)PresetCards.Children[BuiltIns.Length]).BringIntoView();
             RefreshEditor();

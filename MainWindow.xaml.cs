@@ -126,15 +126,16 @@ public partial class MainWindow : Window
         return IntPtr.Zero;
     }
 
-    private void EditorClick(object sender, RoutedEventArgs e) => ShowSettings(false);
-    private void SettingsClick(object sender, RoutedEventArgs e) => ShowSettings(true);
+    private void EditorClick(object sender, RoutedEventArgs e) => ShowPage(EditorPanel, EditorTab);
+    private void ProfilesClick(object sender, RoutedEventArgs e) => ShowPage(ProfilesPanel, ProfilesTab);
+    private void SettingsClick(object sender, RoutedEventArgs e) => ShowPage(SettingsPanel, SettingsTab);
 
-    private void ShowSettings(bool show)
+    private void ShowPage(FrameworkElement activePanel, Button activeTab)
     {
-        EditorPanel.Visibility = show ? Visibility.Collapsed : Visibility.Visible;
-        SettingsPanel.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-        SettingsTab.Tag = show ? "selected" : null;
-        EditorTab.Tag = show ? null : "selected";
+        foreach (var panel in new[] { EditorPanel, ProfilesPanel, SettingsPanel })
+            panel.Visibility = panel == activePanel ? Visibility.Visible : Visibility.Collapsed;
+        foreach (var tab in new[] { EditorTab, ProfilesTab, SettingsTab })
+            tab.Tag = tab == activeTab ? "active" : null;
     }
 
     private void ShowEditor()
@@ -173,7 +174,7 @@ public partial class MainWindow : Window
         OverlayButtonLabel.Text = enabled ? "Скрыть прицел" : "Включить прицел";
         AutomationProperties.SetName(OverlayButton, OverlayButtonLabel.Text);
         FooterOverlayStatus.Text = enabled ? "Оверлей включён" : "Оверлей выключен";
-        OverlayIndicator.Fill = ReticleDrawing.Brush(enabled ? "#B6FFDB" : "#626278");
+        OverlayIndicator.Fill = (System.Windows.Media.Brush)FindResource(enabled ? "AccentBrush" : "MutedBrush");
         _trayToggle.Text = OverlayButtonLabel.Text;
     }
 
@@ -246,14 +247,20 @@ public partial class MainWindow : Window
         ScheduleSave();
     }
 
-    private void TrayClick(object sender, RoutedEventArgs e)
+    private void TrayPreferenceChanged(object sender, RoutedEventArgs e)
     {
+        if (_source is null)
+            return;
+
         _settings.MinimizeToTray = TrayToggle.IsChecked == true;
         ScheduleSave();
     }
 
-    private async void UpdatesToggleClick(object sender, RoutedEventArgs e)
+    private async void UpdatePreferenceChanged(object sender, RoutedEventArgs e)
     {
+        if (_source is null)
+            return;
+
         _settings.CheckUpdates = UpdatesToggle.IsChecked == true;
         ScheduleSave();
         if (_settings.CheckUpdates)
@@ -282,7 +289,8 @@ public partial class MainWindow : Window
             if (_update is { } available)
             {
                 var label = $"Скачать v{available.Version}  ↗";
-                UpdateAvailable.Content = ReleaseButton.Content = label;
+                UpdateAvailable.Content = label;
+                ReleaseButton.Content = available.IsInstaller ? "Скачать установщик ↗" : "Скачать ZIP ↗";
                 UpdateAvailable.Visibility = Visibility.Visible;
                 UpdateFeedback.Text = $"Вышла версия {available.Version}.";
                 if (!manual && previous != available.Version && !IsVisible)

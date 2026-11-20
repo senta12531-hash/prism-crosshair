@@ -93,6 +93,8 @@ public sealed class PresetGlyph : FrameworkElement
         ReticleDrawing.Draw(dc, _reticle, new Point(ActualWidth / 2, ActualHeight / 2), 0.82, 0.82, false);
 }
 
+internal enum PreviewScene { Contrast, Grid, Light, Dark }
+
 public sealed class PreviewSurface : FrameworkElement
 {
     private static readonly Brush DotBrush = ReticleDrawing.Brush("#37374E");
@@ -110,10 +112,10 @@ public sealed class PreviewSurface : FrameworkElement
     };
 
     private Reticle _reticle = new();
-    private int _scene;
+    private PreviewScene _scene;
     private int _zoom = 4;
 
-    internal void Refresh(Reticle reticle, int scene, int zoom)
+    internal void Refresh(Reticle reticle, PreviewScene scene, int zoom)
     {
         _reticle = reticle;
         _scene = scene;
@@ -125,13 +127,16 @@ public sealed class PreviewSurface : FrameworkElement
     {
         var bounds = new Rect(RenderSize);
         var center = new Point(bounds.Width / 2, bounds.Height / 2);
-        var isLight = _scene == 1;
+        var isLight = _scene == PreviewScene.Light;
         var pen = isLight ? LightRule : Rule;
         var text = isLight ? LightLabelBrush : LabelBrush;
-        dc.DrawRectangle(_scene switch { 1 => Light, 2 => Dark, _ => Gradient }, null, bounds);
-        dc.PushClip(new RectangleGeometry(bounds));
+        dc.PushClip(new RectangleGeometry(bounds, 10, 10));
+        if (_scene == PreviewScene.Contrast)
+            ContrastScene.Draw(dc, RenderSize);
+        else
+            dc.DrawRectangle(_scene switch { PreviewScene.Light => Light, PreviewScene.Dark => Dark, _ => Gradient }, null, bounds);
 
-        if (_scene != 2)
+        if (_scene is PreviewScene.Grid or PreviewScene.Light)
         {
             for (var x = center.X % 20; x < bounds.Width; x += 20)
             for (var y = center.Y % 20; y < bounds.Height; y += 20)
@@ -148,7 +153,7 @@ public sealed class PreviewSurface : FrameworkElement
         }
 
         var drawnAt = new Point(center.X + _reticle.OffsetX * _zoom, center.Y + _reticle.OffsetY * _zoom);
-        ReticleDrawing.Draw(dc, _reticle, drawnAt, _zoom, _zoom, _scene == 0);
+        ReticleDrawing.Draw(dc, _reticle, drawnAt, _zoom, _zoom, _scene == PreviewScene.Grid);
         dc.Pop();
     }
 }

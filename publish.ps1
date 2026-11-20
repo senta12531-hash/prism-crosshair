@@ -1,3 +1,5 @@
+param([string]$InnoCompiler, [string]$NotesFile)
+
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
@@ -16,10 +18,14 @@ try {
     }
 
     $version = ([xml](Get-Content Prism.csproj -Raw)).Project.PropertyGroup.Version
-    & ./package.ps1
+    & ./package.ps1 -InnoCompiler $InnoCompiler
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    gh release create "v$version" dist/Prism-win-x64.zip dist/Prism-win-x64.sha256 --target $commit --title "Prism v$version" --generate-notes
+    $assets = @('dist/Prism-Setup-win-x64.exe', 'dist/Prism-Setup-win-x64.sha256',
+                'dist/Prism-win-x64.zip', 'dist/Prism-win-x64.sha256')
+    $notes = @('--generate-notes')
+    if ($NotesFile) { $notes = @('--notes-file', $NotesFile) }
+    gh release create "v$version" @assets --target $commit --title "Prism v$version" @notes
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 finally {
