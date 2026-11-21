@@ -19,6 +19,9 @@ public partial class MainWindow
     private const int MaximumProfileFileSize = 256 * 1024;
     private const string ProfileFileFilter = "Профиль Prism (*.json)|*.json";
 
+    private static readonly Preset CatPreset = new("Котик", "Контур с ушками",
+        new Reticle { Shape = ReticleShape.Cat, Color = "#FFC4D2", Length = 16, Gap = 3, Thickness = 2, RoundedEnds = true, CenterDot = false });
+
     private static readonly Preset[] BuiltIns =
     {
         new("Призма", "Классический", new Reticle()),
@@ -26,7 +29,8 @@ public partial class MainWindow
         new("Орбита", "Кольцо", new Reticle { Shape = ReticleShape.Ring, Color = "#B5A3FF", Length = 19, CenterDot = false }),
         new("Вектор", "Т-образный", new Reticle { Shape = ReticleShape.TShape, Color = "#6DE3FF", Length = 13, Gap = 3, CenterDot = false }),
         new("Штрих", "Скруглённые лучи", new Reticle { Color = "#D9C59F", Length = 14, VerticalLength = 7, Thickness = 4, RoundedEnds = true, CenterDot = false }),
-        new("Ромб", "Диагональ с точкой", new Reticle { Shape = ReticleShape.Diagonal, Color = "#E8E5DF", SquareDot = true, DotSize = 4, Gap = 6 })
+        new("Ромб", "Диагональ с точкой", new Reticle { Shape = ReticleShape.Diagonal, Color = "#E8E5DF", SquareDot = true, DotSize = 4, Gap = 6 }),
+        CatPreset
     };
 
     private enum ProfileFilter { All, BuiltIn, Custom, Favorites }

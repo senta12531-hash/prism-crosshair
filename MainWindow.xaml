@@ -112,9 +112,11 @@
                   <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE72A;" Width="32" VerticalAlignment="Center"
                           Click="NextTipClick" AutomationProperties.Name="Следующая подсказка" ToolTip="Следующая подсказка"/>
                   <Button DockPanel.Dock="Left" Width="47" Height="44" BorderThickness="0" Background="Transparent" Padding="0"
-                          VerticalAlignment="Center" Click="NextTipClick" AutomationProperties.Name="Пиксель. Следующая подсказка" Margin="0,0,9,0">
+                          VerticalAlignment="Center" Click="PetGuideClick" AutomationProperties.Name="Погладить Пикселя" ToolTip="Погладить Пикселя" Margin="0,0,9,0">
                     <local:PixelGuide x:Name="Pixel" Width="41" Height="39"/>
                   </Button>
+                  <Button x:Name="TryCatButton" DockPanel.Dock="Right" MinHeight="29" Content="Примерить «Котика»" Click="TryCatClick"
+                          Visibility="Collapsed" Margin="4,0,5,0" VerticalAlignment="Center"/>
                   <StackPanel VerticalAlignment="Center" Margin="0,0,7,0">
                     <TextBlock Text="Пиксель" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
                     <TextBlock x:Name="TipText" Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" Margin="0,3,0,0"/>

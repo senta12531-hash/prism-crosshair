@@ -11,6 +11,17 @@ public sealed class PixelGuide : FrameworkElement
     private static readonly Brush Dark = ReticleDrawing.Brush("#223536");
     private static readonly Brush Light = ReticleDrawing.Brush("#D6F4EC");
     private bool _excited;
+    private static readonly Geometry Heart = Geometry.Parse("M34,12 C32,10 28,8 28,5 C28,1 33,0 34,4 C36,0 40,1 40,5 C40,8 36,10 34,12 Z");
+    private bool _showHeart;
+
+    internal bool ShowHeart
+    {
+        set
+        {
+            _showHeart = value;
+            InvalidateVisual();
+        }
+    }
 
     internal bool Excited
     {
@@ -41,6 +52,8 @@ public sealed class PixelGuide : FrameworkElement
             drawing.DrawEllipse(Dark, null, new Point(15, 21), 1.5, 2);
             drawing.DrawEllipse(Dark, null, new Point(26, 21), 1.5, 2);
         }
+        if (_showHeart)
+            drawing.DrawGeometry(InnerEar, null, Heart);
         drawing.DrawGeometry(null, new Pen(Dark, 1.15), Geometry.Parse("M18,24 Q19,26 20.5,24 Q22,26 23,24"));
         drawing.Pop();
     }

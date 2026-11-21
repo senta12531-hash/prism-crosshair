@@ -86,7 +86,7 @@ internal static class ReticleDrawing
             }
         }
 
-        if (r.Shape is ReticleShape.Chevron or ReticleShape.Brackets)
+        if (r.Shape is ReticleShape.Chevron or ReticleShape.Brackets or ReticleShape.Cat)
         {
             dc.PushTransform(new RotateTransform(r.Rotation));
             var cap = r.RoundedEnds ? PenLineCap.Round : PenLineCap.Square;
@@ -101,6 +101,8 @@ internal static class ReticleDrawing
                 DrawAngle(dc, pen, new Point(-r.Length, height - r.Gap), new Point(0, -r.Gap),
                     new Point(r.Length, height - r.Gap));
             }
+            else if (r.Shape == ReticleShape.Cat)
+                DrawCat(dc, pen, r);
             else
             {
                 double depth = r.Length / 2.0;
@@ -112,6 +114,27 @@ internal static class ReticleDrawing
             }
             dc.Pop();
         }
+    }
+
+    private static void DrawCat(DrawingContext dc, Pen pen, Reticle reticle)
+    {
+        double face = reticle.Length / 2.0;
+        double rim = Math.Max(3, reticle.Gap + reticle.Thickness / 2.0);
+        double ears = rim + face * 0.68;
+        var silhouette = new StreamGeometry();
+        using (var points = silhouette.Open())
+        {
+            points.BeginFigure(new Point(-face, rim * -0.35), false, false);
+            points.LineTo(new Point(-face, -ears), true, false);
+            points.LineTo(new Point(-face * 0.36, -rim), true, false);
+            points.LineTo(new Point(face * 0.36, -rim), true, false);
+            points.LineTo(new Point(face, -ears), true, false);
+            points.LineTo(new Point(face, rim * -0.35), true, false);
+            points.BeginFigure(new Point(-face, rim * 0.4), false, false);
+            points.QuadraticBezierTo(new Point(-face * 0.92, rim + face * 0.48), new Point(0, rim + face * 0.48), true, true);
+            points.QuadraticBezierTo(new Point(face * 0.92, rim + face * 0.48), new Point(face, rim * 0.4), true, true);
+        }
+        dc.DrawGeometry(null, pen, silhouette);
     }
 
     private static void DrawAngle(DrawingContext dc, Pen pen, Point start, Point bend, Point end)

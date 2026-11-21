@@ -11,7 +11,7 @@ namespace Prism;
 
 public partial class MainWindow
 {
-    private static readonly string[] ShapeNames = { "Крест", "Т-форма", "Точка", "Кольцо", "Диагональ", "Шеврон", "Уголки" };
+    private static readonly string[] ShapeNames = { "Крест", "Т-форма", "Точка", "Кольцо", "Диагональ", "Шеврон", "Уголки", "Котик" };
     private static readonly string[] Colors = { "#FAFCFF", "#B6FFDB", "#6DE3FF", "#A7B8FF", "#FF92AA", "#FFE493", "#ACFF61" };
 
     private static readonly string[] OutlineColors = { "#000000", "#333738", "#FFFFFF", "#D9C59F", "#3E6980", "#AC5568" };

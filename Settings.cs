@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Prism;
 
-public enum ReticleShape { Cross, TShape, Dot, Ring, Diagonal, Chevron, Brackets }
+public enum ReticleShape { Cross, TShape, Dot, Ring, Diagonal, Chevron, Brackets, Cat }
 public enum PlacementMode { ActiveMonitor, FixedMonitor }
 public enum OverlayStartupMode { Restore, Enabled, Disabled }
 

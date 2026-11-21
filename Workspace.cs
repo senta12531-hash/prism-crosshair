@@ -140,7 +140,31 @@ public partial class MainWindow
     {
         _tipIndex = (_tipIndex + 1) % Tips.Length;
         TipText.Text = Tips[_tipIndex];
+        Pixel.ShowHeart = false;
         Pixel.Excited = _tipIndex % 2 != 0;
+        TryCatButton.Visibility = Visibility.Collapsed;
+        AnimatePixel();
+    }
+
+    private void PetGuideClick(object sender, RoutedEventArgs e)
+    {
+        TipText.Text = "Мур-р! Хочешь примерить мои ушки?";
+        Pixel.Excited = true;
+        Pixel.ShowHeart = true;
+        TryCatButton.Visibility = Visibility.Visible;
+        AnimatePixel();
+    }
+
+    private void TryCatClick(object sender, RoutedEventArgs e)
+    {
+        ApplyPreset(CatPreset, navigateToEditor: false);
+        TipText.Text = "Готово! «Котик» на холсте. Можешь сохранить свой вариант в профилях.";
+        TryCatButton.Visibility = Visibility.Collapsed;
+        AnimatePixel();
+    }
+
+    private void AnimatePixel()
+    {
 
         if (!AllowsMotion)
             return;
