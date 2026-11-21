@@ -3,10 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Prism"
         xmlns:chrome="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        Title="Prism Crosshair" Width="1232" Height="712" MinWidth="925" MinHeight="600"
+        Title="Prism Crosshair" Width="1232" Height="754" MinWidth="925" MinHeight="600"
         WindowStyle="None" ResizeMode="CanResize" WindowStartupLocation="CenterScreen"
         Background="{StaticResource WindowBrush}" Foreground="{StaticResource TextBrush}"
-        TextElement.Foreground="{StaticResource TextBrush}" FontFamily="Segoe UI, Arial" FontSize="13"
+        TextElement.Foreground="{StaticResource TextBrush}" FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="13"
         Icon="/Assets/Prism.ico" UseLayoutRounding="True" SnapsToDevicePixels="True" KeyDown="WindowKeyDown">
   <chrome:WindowChrome.WindowChrome>
     <chrome:WindowChrome CaptionHeight="54" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0"/>
@@ -18,7 +18,7 @@
     <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1">
       <Grid Margin="25,0,12,0">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-          <TextBlock Text="Prism" FontFamily="Bahnschrift, Segoe UI" FontSize="24" FontWeight="Bold"/>
+          <TextBlock Text="Prism" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="24" FontWeight="Bold"/>
           <Ellipse Width="8" Height="8" Fill="{StaticResource AccentBrush}" Margin="8,1,0,0"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" chrome:WindowChrome.IsHitTestVisibleInChrome="True">
@@ -36,11 +36,11 @@
 
     <Grid Grid.Row="1" Margin="25,18,25,0">
       <Grid x:Name="EditorPanel">
-        <Grid.RowDefinitions><RowDefinition Height="88"/><RowDefinition/><RowDefinition Height="68"/></Grid.RowDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="76"/><RowDefinition/></Grid.RowDefinitions>
         <Grid>
           <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
           <StackPanel VerticalAlignment="Top">
-            <TextBlock Text="Прицел" Style="{StaticResource PageHeading}"/>
+            <TextBlock Text="Редактор прицела" Style="{StaticResource PageHeading}"/>
             <TextBlock x:Name="ProfileCaption" Foreground="{StaticResource MutedBrush}" FontSize="14" Margin="2,0,0,0"/>
           </StackPanel>
           <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,12">
@@ -48,7 +48,7 @@
                     Padding="11,0" Height="36" Margin="0,0,8,0" VerticalAlignment="Center">
               <TextBlock x:Name="HeaderShortcut" FontFamily="Cascadia Mono, Consolas" VerticalAlignment="Center" FontSize="12"/>
             </Border>
-            <Button x:Name="OverlayButton" Tag="primary" Click="OverlayClick" MinHeight="44" Padding="16,0">
+            <Button x:Name="OverlayButton" Tag="primary" Click="OverlayClick" MinHeight="39" Padding="16,0">
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="OverlayButtonLabel" VerticalAlignment="Center" FontSize="14"/>
                 <TextBlock Text="&#xE7B3;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="9,0,0,0" VerticalAlignment="Center"/>
@@ -57,87 +57,44 @@
           </StackPanel>
         </Grid>
 
-        <Border Grid.Row="1" Background="#0A1020" BorderBrush="#323B53" BorderThickness="1" CornerRadius="11" ClipToBounds="True">
-          <Grid>
-            <local:PreviewSurface x:Name="Preview" IsHitTestVisible="False"/>
-
-            <TextBlock Text="Предпросмотр" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14,17,0,0"
-                       FontSize="12" Foreground="{StaticResource TextBrush}" IsHitTestVisible="False"/>
-            <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="12" Padding="10,7" Style="{StaticResource StageChip}">
+        <Grid Grid.Row="1">
+          <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="14"/><ColumnDefinition Width="340"/></Grid.ColumnDefinitions>
+          <Border Style="{StaticResource Panel}" Padding="0">
+            <Grid>
+              <Grid.RowDefinitions><RowDefinition Height="48"/><RowDefinition/><RowDefinition Height="52"/></Grid.RowDefinitions>
+              <DockPanel Margin="14,0">
+            <Border DockPanel.Dock="Right" VerticalAlignment="Center" Padding="10,7" Style="{StaticResource StageChip}">
               <StackPanel Orientation="Horizontal">
                 <Ellipse x:Name="OverlayIndicator" Width="6" Height="6" VerticalAlignment="Center" Margin="0,0,7,0"/>
                 <TextBlock x:Name="FooterOverlayStatus" FontSize="12" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
               </StackPanel>
             </Border>
-
-            <ComboBox x:Name="SceneBox" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="142" MinHeight="32" Margin="12"
-                      Background="{StaticResource PanelBrush}" SelectionChanged="PreviewChanged" AutomationProperties.Name="Фон предпросмотра"/>
-            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="12" Style="{StaticResource StageChip}">
+                <TextBlock Text="Холст" Style="{StaticResource SectionHeading}" VerticalAlignment="Center"/>
+              </DockPanel>
+              <local:PreviewSurface Grid.Row="1" x:Name="Preview" ClipToBounds="True" IsHitTestVisible="False"/>
+              <DockPanel Grid.Row="2" Margin="14,0" LastChildFill="False">
+            <Border DockPanel.Dock="Right" VerticalAlignment="Center" Style="{StaticResource StageChip}">
               <StackPanel Orientation="Horizontal" Margin="2">
                 <Button x:Name="ZoomOut" Content="−" Width="27" MinHeight="27" Padding="0" BorderThickness="0" Background="Transparent"
                         Click="ZoomOutClick" AutomationProperties.Name="Уменьшить масштаб"/>
-                <TextBlock x:Name="ZoomLabel" Width="36" TextAlignment="Center" VerticalAlignment="Center" FontFamily="Bahnschrift, Segoe UI" FontSize="14"/>
+                <TextBlock x:Name="ZoomLabel" Width="36" TextAlignment="Center" VerticalAlignment="Center" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="14"/>
                 <Button x:Name="ZoomIn" Content="+" Width="27" MinHeight="27" Padding="0" BorderThickness="0" Background="Transparent"
                         Click="ZoomInClick" AutomationProperties.Name="Увеличить масштаб"/>
               </StackPanel>
             </Border>
-
-            <Grid VerticalAlignment="Bottom" Margin="12,0,12,50">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.12*"/><ColumnDefinition Width="1.23*"/><ColumnDefinition Width=".9*"/>
-                <ColumnDefinition Width=".95*"/><ColumnDefinition Width="1.2*"/>
-              </Grid.ColumnDefinitions>
-              <Border x:Name="ShapeDetails" Style="{StaticResource Flyout}" Grid.ColumnSpan="2" Width="315" HorizontalAlignment="Left">
-                <StackPanel>
-                  <TextBlock Text="Форма прицела" Style="{StaticResource SectionHeading}" Margin="0,0,0,8"/>
-                  <UniformGrid x:Name="ShapeButtons" Columns="5" Rows="1" Margin="-3,0,-3,0"/>
-                  <CheckBox x:Name="DotToggle" Content="Центральная точка" Checked="DotChanged" Unchecked="DotChanged" Margin="0,6,0,0"/>
-                </StackPanel>
-              </Border>
-              <Border x:Name="SizeDetails" Style="{StaticResource Flyout}" Grid.Column="1" Grid.ColumnSpan="2" Width="244" HorizontalAlignment="Left">
-                <StackPanel>
-                  <DockPanel Margin="0,0,0,4">
-                    <Button DockPanel.Dock="Right" Content="Сбросить" Click="ResetClick" MinHeight="26"
-                            Padding="7,0" Background="Transparent" Foreground="{StaticResource MutedBrush}"/>
-                    <TextBlock Text="Размер прицела" Style="{StaticResource SectionHeading}" VerticalAlignment="Center"/>
-                  </DockPanel>
-                  <StackPanel x:Name="GeometrySliders" Margin="-7,0"/>
-                </StackPanel>
-              </Border>
-              <Border x:Name="ColorDetails" Style="{StaticResource Flyout}" Grid.Column="2" Grid.ColumnSpan="2" Width="286" HorizontalAlignment="Left">
-                <StackPanel>
-                  <DockPanel Margin="0,0,0,10">
-                    <TextBox x:Name="HexInput" DockPanel.Dock="Right" Width="89" MinHeight="29" MaxLength="7" VerticalAlignment="Center"
-                             FontFamily="Cascadia Mono, Consolas" FontSize="12" KeyDown="HexKeyDown" LostKeyboardFocus="HexLostFocus"
-                             ToolTip="Введите HEX-цвет и нажмите Enter" AutomationProperties.Name="HEX-цвет"/>
-                    <TextBlock Text="Цвет прицела" Style="{StaticResource SectionHeading}" VerticalAlignment="Center"/>
-                  </DockPanel>
-                  <UniformGrid x:Name="Palette" Rows="1" Margin="-2,0"/>
-                  <StackPanel x:Name="ColorControls" Margin="-7,8,-7,0"/>
-                </StackPanel>
-              </Border>
-              <Border x:Name="OutlineDetails" Style="{StaticResource Flyout}" Grid.Column="3" Grid.ColumnSpan="2" Width="218" HorizontalAlignment="Left">
-                <StackPanel>
-                  <TextBlock Text="Контур прицела" Style="{StaticResource SectionHeading}"/>
-                  <CheckBox x:Name="OutlineToggle" Content="Показывать контур" Checked="OutlineChanged" Unchecked="OutlineChanged" Margin="0,4,0,0"/>
-                  <StackPanel x:Name="OutlineSliders" Margin="-7,0"/>
-                </StackPanel>
-              </Border>
-              <Border x:Name="PositionDetails" Style="{StaticResource Flyout}" Grid.Column="3" Grid.ColumnSpan="2" Width="234" HorizontalAlignment="Right">
-                <StackPanel>
-                  <TextBlock Text="Смещение от центра" Style="{StaticResource SectionHeading}" Margin="0,0,0,4"/>
-                  <StackPanel x:Name="OffsetSliders" Margin="-7,0"/>
-                </StackPanel>
-              </Border>
+                <TextBlock DockPanel.Dock="Left" Text="Фон" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
+            <ComboBox x:Name="SceneBox" DockPanel.Dock="Left" VerticalAlignment="Center" Width="142" MinHeight="32" Margin="8,0,0,0"
+                      Background="{StaticResource PanelBrush}" SelectionChanged="PreviewChanged" AutomationProperties.Name="Фон предпросмотра"/>
+              </DockPanel>
             </Grid>
-          </Grid>
-        </Border>
-
-        <Grid Grid.Row="2" Margin="0,10,0,0">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1.12*"/><ColumnDefinition Width="1.23*"/><ColumnDefinition Width=".9*"/>
-            <ColumnDefinition Width=".95*"/><ColumnDefinition Width="1.2*"/>
-          </Grid.ColumnDefinitions>
+          </Border>
+          <Border Grid.Column="2" Style="{StaticResource Panel}">
+            <DockPanel>
+              <Border DockPanel.Dock="Top" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="16,13">
+                <TextBlock Text="Параметры прицела" Style="{StaticResource SectionHeading}"/>
+              </Border>
+              <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="7,6">
           <Button x:Name="ShapeTool" Style="{StaticResource ToolButton}" Click="TuningClick" AutomationProperties.Name="Форма">
             <DockPanel>
               <Border Style="{StaticResource ToolIcon}"><Path Data="M0,5 L10,5 M5,0 L5,10" Stroke="{StaticResource TextBrush}"
@@ -145,27 +102,70 @@
               <StackPanel><TextBlock Text="Форма"/><TextBlock x:Name="ShapeValue" Style="{StaticResource ToolValue}"/></StackPanel>
             </DockPanel>
           </Button>
-          <Button x:Name="SizeTool" Grid.Column="1" Style="{StaticResource ToolButton}" Click="TuningClick" AutomationProperties.Name="Размер">
+          <Border x:Name="ShapeDetails" Style="{StaticResource InspectorDetail}">
+        <StackPanel>
+          <TextBlock Text="Вид метки" Style="{StaticResource Caption}" Margin="0,0,0,8"/>
+          <UniformGrid x:Name="ShapeButtons" Columns="5" Rows="1" Margin="-3,0,-3,0"/>
+          <CheckBox x:Name="DotToggle" Content="Центральная точка" Checked="DotChanged" Unchecked="DotChanged" Margin="0,6,0,0"/>
+            <CheckBox x:Name="SquareToggle" Content="Квадратная точка" Checked="DetailChanged" Unchecked="DetailChanged"/>
+            <CheckBox x:Name="RoundToggle" Content="Скруглить концы лучей" Checked="DetailChanged" Unchecked="DetailChanged"/>
+            <StackPanel x:Name="AngleSliders" Margin="-7,3,-7,0"/>
+        </StackPanel>
+          </Border>
+          <Button x:Name="SizeTool" Style="{StaticResource ToolButton}" Click="TuningClick" AutomationProperties.Name="Размер">
             <DockPanel>
               <Border Style="{StaticResource ToolIcon}"><Path Data="M4,0 L0,4 4,8 M0,4 L13,4 M9,0 L13,4 9,8" Stroke="{StaticResource TextBrush}"
                       StrokeThickness="1.4" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
               <StackPanel><TextBlock Text="Размер"/><TextBlock x:Name="SizeValue" Style="{StaticResource ToolValue}"/></StackPanel>
             </DockPanel>
           </Button>
-          <Button x:Name="ColorTool" Grid.Column="2" Style="{StaticResource ToolButton}" Click="TuningClick" AutomationProperties.Name="Цвет">
+          <Border x:Name="SizeDetails" Style="{StaticResource InspectorDetail}">
+        <StackPanel>
+          <DockPanel Margin="0,0,0,4">
+            <Button DockPanel.Dock="Right" Content="Сбросить" Click="ResetClick" MinHeight="26"
+                    Padding="7,0" Background="Transparent" Foreground="{StaticResource MutedBrush}"/>
+            <TextBlock Text="Геометрия" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
+          </DockPanel>
+          <StackPanel x:Name="GeometrySliders" Margin="-7,0"/>
+            <CheckBox x:Name="VerticalToggle" Content="Своя длина вертикальных лучей" Checked="DetailChanged" Unchecked="DetailChanged"/>
+            <StackPanel x:Name="VerticalSliders" Margin="-7,0"/>
+        </StackPanel>
+          </Border>
+          <Button x:Name="ColorTool" Style="{StaticResource ToolButton}" Click="TuningClick" AutomationProperties.Name="Цвет">
             <DockPanel>
               <Border Style="{StaticResource ToolIcon}"><Ellipse x:Name="ColorValueSwatch" Width="11" Height="11" VerticalAlignment="Center"/></Border>
               <StackPanel><TextBlock Text="Цвет"/><TextBlock x:Name="ColorValue" Style="{StaticResource ToolValue}" FontFamily="Consolas"/></StackPanel>
             </DockPanel>
           </Button>
-          <Button x:Name="OutlineTool" Grid.Column="3" Style="{StaticResource ToolButton}" Click="TuningClick" AutomationProperties.Name="Контур">
+          <Border x:Name="ColorDetails" Style="{StaticResource InspectorDetail}">
+        <StackPanel>
+          <DockPanel Margin="0,0,0,10">
+            <TextBox x:Name="HexInput" DockPanel.Dock="Right" Width="89" MinHeight="29" MaxLength="7" VerticalAlignment="Center"
+                     FontFamily="Cascadia Mono, Consolas" FontSize="12" KeyDown="HexKeyDown" LostKeyboardFocus="HexLostFocus"
+                     ToolTip="Введите HEX-цвет и нажмите Enter" AutomationProperties.Name="HEX-цвет"/>
+            <TextBlock Text="Палитра" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
+          </DockPanel>
+          <UniformGrid x:Name="Palette" Rows="1" Margin="-2,0"/>
+          <StackPanel x:Name="ColorControls" Margin="-7,8,-7,0"/>
+        </StackPanel>
+          </Border>
+          <Button x:Name="OutlineTool" Style="{StaticResource ToolButton}" Click="TuningClick" AutomationProperties.Name="Контур">
             <DockPanel>
               <Border Style="{StaticResource ToolIcon}"><Ellipse Width="11" Height="11" Stroke="{StaticResource TextBrush}"
                       StrokeThickness="1.7" VerticalAlignment="Center"/></Border>
               <StackPanel><TextBlock Text="Контур"/><TextBlock x:Name="OutlineValue" Style="{StaticResource ToolValue}"/></StackPanel>
             </DockPanel>
           </Button>
-          <Button x:Name="PositionTool" Grid.Column="4" Style="{StaticResource ToolButton}" Click="TuningClick" AutomationProperties.Name="Положение" Margin="0">
+          <Border x:Name="OutlineDetails" Style="{StaticResource InspectorDetail}">
+        <StackPanel>
+          <TextBlock Text="Обводка" Style="{StaticResource Caption}"/>
+          <CheckBox x:Name="OutlineToggle" Content="Показывать контур" Checked="OutlineChanged" Unchecked="OutlineChanged" Margin="0,4,0,0"/>
+          <StackPanel x:Name="OutlineSliders" Margin="-7,0"/>
+            <TextBlock Text="Цвет контура" Style="{StaticResource Caption}" Margin="0,6,0,5"/>
+            <UniformGrid x:Name="OutlinePalette" Rows="1"/>
+        </StackPanel>
+          </Border>
+          <Button x:Name="PositionTool" Style="{StaticResource ToolButton}" Click="TuningClick" AutomationProperties.Name="Положение">
             <DockPanel>
               <Border Style="{StaticResource ToolIcon}">
                 <Grid><Ellipse Width="12" Height="12" Stroke="{StaticResource TextBrush}" StrokeThickness="1.2"/>
@@ -174,11 +174,21 @@
               <StackPanel><TextBlock Text="Положение"/><TextBlock x:Name="PositionValue" Style="{StaticResource ToolValue}"/></StackPanel>
             </DockPanel>
           </Button>
+          <Border x:Name="PositionDetails" Style="{StaticResource InspectorDetail}">
+        <StackPanel>
+          <TextBlock Text="Смещение от центра" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+          <StackPanel x:Name="OffsetSliders" Margin="-7,0"/>
+        </StackPanel>
+          </Border>
+                </StackPanel>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
         </Grid>
       </Grid>
 
       <Grid x:Name="ProfilesPanel" Visibility="Collapsed">
-        <Grid.RowDefinitions><RowDefinition Height="90"/><RowDefinition/></Grid.RowDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="78"/><RowDefinition/></Grid.RowDefinitions>
         <DockPanel>
           <Button DockPanel.Dock="Right" Content="Сохранить текущий прицел" Tag="primary" Click="SavePresetClick" MinHeight="42" VerticalAlignment="Center"/>
           <StackPanel>
@@ -192,7 +202,7 @@
       </Grid>
 
       <Grid x:Name="SettingsPanel" Visibility="Collapsed">
-        <Grid.RowDefinitions><RowDefinition Height="90"/><RowDefinition/></Grid.RowDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="78"/><RowDefinition/></Grid.RowDefinitions>
         <StackPanel>
           <TextBlock Text="Настройки" Style="{StaticResource PageHeading}"/>
           <TextBlock Text="Монитор, горячая клавиша и обновления." Foreground="{StaticResource MutedBrush}" FontSize="14" Margin="2,0,0,0"/>

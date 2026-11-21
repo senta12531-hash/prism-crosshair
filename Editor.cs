@@ -14,12 +14,16 @@ public partial class MainWindow
     private static readonly string[] ShapeNames = { "Крест", "Т-форма", "Точка", "Кольцо", "Диагональ" };
     private static readonly string[] Colors = { "#FAFCFF", "#B6FFDB", "#6DE3FF", "#A7B8FF", "#FF92AA", "#FFE493", "#ACFF61" };
 
+    private static readonly string[] OutlineColors = { "#000000", "#333738", "#FFFFFF", "#D9C59F", "#3E6980", "#AC5568" };
+
     private static readonly Preset[] BuiltIns =
     {
         new("Призма", "Классический", new Reticle()),
         new("Искра", "Точка", new Reticle { Shape = ReticleShape.Dot, Color = "#FF92AA", DotSize = 5 }),
         new("Орбита", "Кольцо", new Reticle { Shape = ReticleShape.Ring, Color = "#B5A3FF", Length = 19, CenterDot = false }),
-        new("Вектор", "Т-образный", new Reticle { Shape = ReticleShape.TShape, Color = "#6DE3FF", Length = 13, Gap = 3, CenterDot = false })
+        new("Вектор", "Т-образный", new Reticle { Shape = ReticleShape.TShape, Color = "#6DE3FF", Length = 13, Gap = 3, CenterDot = false }),
+        new("Штрих", "Скруглённые лучи", new Reticle { Color = "#D9C59F", Length = 14, VerticalLength = 7, Thickness = 4, RoundedEnds = true, CenterDot = false }),
+        new("Ромб", "Диагональ с точкой", new Reticle { Shape = ReticleShape.Diagonal, Color = "#E8E5DF", SquareDot = true, DotSize = 4, Gap = 6 })
     };
 
     private sealed record SliderBinding(Slider Input, TextBlock Label, TextBlock Value, Func<Reticle, int> Read,
@@ -27,7 +31,7 @@ public partial class MainWindow
     private readonly List<SliderBinding> _sliders = new();
     private readonly List<(Button Button, Preset Preset)> _presetButtons = new();
     private bool _synchronizing;
-    private int _zoom = 2;
+    private int _zoom = 4;
     private (Button Button, FrameworkElement Panel)[] _tuningGroups = Array.Empty<(Button, FrameworkElement)>();
     private Button? _activeTuning;
     private string? _activePresetName;
@@ -36,7 +40,7 @@ public partial class MainWindow
     {
         _synchronizing = true;
         SceneBox.ItemsSource = new[] { "Контраст", "Сетка", "Светлый", "Тёмный" };
-        SceneBox.SelectedIndex = 0;
+        SceneBox.SelectedIndex = (int)PreviewScene.Grid;
         _tuningGroups = new[]
         {
             (ShapeTool, (FrameworkElement)ShapeDetails),
@@ -61,14 +65,8 @@ public partial class MainWindow
             ShapeButtons.Children.Add(button);
         }
 
-        foreach (var color in Colors)
-        {
-            var swatch = new System.Windows.Shapes.Ellipse { Width = 16, Height = 16, Fill = ReticleDrawing.Brush(color) };
-            var button = new Button { Content = swatch, MinHeight = 33, Padding = new Thickness(0), Margin = new Thickness(2, 0, 2, 0), ToolTip = color };
-            AutomationProperties.SetName(button, $"Цвет {color}");
-            button.Click += (_, _) => SetReticle(_settings.Reticle with { Color = color });
-            Palette.Children.Add(button);
-        }
+        AddPalette(Palette, Colors, false);
+        AddPalette(OutlinePalette, OutlineColors, true);
 
         AddSlider(GeometrySliders, "Длина", 1, 36, " px", r => r.Length, (r, v) => r with { Length = v }, r => r.Shape != ReticleShape.Dot);
         AddSlider(GeometrySliders, "Зазор", 0, 24, " px", r => r.Gap, (r, v) => r with { Gap = v }, SupportsArms);
@@ -79,8 +77,24 @@ public partial class MainWindow
         AddSlider(OffsetSliders, "По X", -100, 100, " px", r => r.OffsetX, (r, v) => r with { OffsetX = v });
         AddSlider(OffsetSliders, "По Y", -100, 100, " px", r => r.OffsetY, (r, v) => r with { OffsetY = v });
 
+        AddSlider(AngleSliders, "Поворот", -180, 180, "°", r => r.Rotation, (r, v) => r with { Rotation = v }, SupportsArms);
+        AddSlider(VerticalSliders, "Длина по вертикали", 1, 36, " px", r => r.VerticalLength ?? r.Length,
+            (r, v) => r with { VerticalLength = v }, r => SupportsArms(r) && r.VerticalLength.HasValue);
+
         BuildPresetCards();
         RefreshEditor();
+    }
+
+    private void AddPalette(Panel panel, string[] palette, bool outline)
+    {
+        foreach (var color in palette)
+        {
+            var swatch = new System.Windows.Shapes.Ellipse { Width = 16, Height = 16, Fill = ReticleDrawing.Brush(color) };
+            var button = new Button { Content = swatch, MinHeight = 33, Padding = new Thickness(0), Margin = new Thickness(2, 0, 2, 0), ToolTip = color };
+            AutomationProperties.SetName(button, outline ? $"Контур {color}" : $"Цвет {color}");
+            button.Click += (_, _) => SetReticle(outline ? _settings.Reticle with { OutlineColor = color } : _settings.Reticle with { Color = color });
+            panel.Children.Add(button);
+        }
     }
 
     private static bool SupportsArms(Reticle r) =>
@@ -204,6 +218,15 @@ public partial class MainWindow
         DotToggle.Opacity = DotToggle.IsEnabled ? 1 : 0.55;
         DotToggle.IsChecked = reticle.CenterDot || reticle.Shape == ReticleShape.Dot;
         OutlineToggle.IsChecked = reticle.Outline;
+        SquareToggle.IsChecked = reticle.SquareDot;
+        SquareToggle.IsEnabled = reticle.CenterDot || reticle.Shape == ReticleShape.Dot;
+        RoundToggle.IsChecked = reticle.RoundedEnds;
+        RoundToggle.IsEnabled = VerticalToggle.IsEnabled = SupportsArms(reticle);
+        VerticalToggle.IsChecked = reticle.VerticalLength.HasValue;
+        VerticalSliders.Visibility = SupportsArms(reticle) && reticle.VerticalLength.HasValue ? Visibility.Visible : Visibility.Collapsed;
+        OutlinePalette.IsEnabled = reticle.Outline;
+        for (int i = 0; i < OutlineColors.Length; i++)
+            ((Button)OutlinePalette.Children[i]).Tag = OutlineColors[i] == reticle.OutlineColor ? "selected" : null;
         HexInput.Text = reticle.Color;
         HexInput.Tag = null;
 
@@ -244,6 +267,20 @@ public partial class MainWindow
         SetReticle(new Reticle());
         Notice.Text = "Параметры прицела сброшены.";
     }
+    private void DetailChanged(object sender, RoutedEventArgs e)
+    {
+        if (_synchronizing)
+            return;
+
+        var current = _settings.Reticle;
+        if (sender == VerticalToggle)
+            SetReticle(current with { VerticalLength = VerticalToggle.IsChecked == true ? current.Length : null });
+        else if (sender == RoundToggle)
+            SetReticle(current with { RoundedEnds = RoundToggle.IsChecked == true });
+        else if (sender == SquareToggle)
+            SetReticle(current with { SquareDot = SquareToggle.IsChecked == true });
+    }
+
     private void DotChanged(object sender, RoutedEventArgs e)
     {
         if (!_synchronizing)
@@ -304,20 +341,21 @@ public partial class MainWindow
 
     private void AddPresetCard(Preset preset, bool custom)
     {
-        var layout = new Grid { Width = 183, Height = 77 };
-        layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(52) });
-        layout.ColumnDefinitions.Add(new ColumnDefinition());
+        var layout = new Grid { Width = 204, Height = 150 };
+        layout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(86) });
+        layout.RowDefinitions.Add(new RowDefinition());
         var icon = new Border
         {
-            Width = 44, Height = 44, HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Center, CornerRadius = new CornerRadius(7),
-            Background = ReticleDrawing.Brush("#172237"), Child = new PresetGlyph { Reticle = preset.Reticle }
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch, CornerRadius = new CornerRadius(5),
+            Margin = new Thickness(0, 8, 0, 0),
+            Background = ReticleDrawing.Brush("#1A1C1B"), Child = new PresetGlyph { Reticle = preset.Reticle }
         };
         var copy = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(3, 0, 0, 0) };
         copy.Children.Add(new TextBlock { Text = preset.Name, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
-        copy.Children.Add(new TextBlock { Text = preset.Description, FontSize = 10, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 3, 0, 0),
+        copy.Children.Add(new TextBlock { Text = preset.Description, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 3, 0, 0),
             Foreground = (Brush)FindResource("MutedBrush") });
-        Grid.SetColumn(copy, 1);
+        Grid.SetRow(copy, 1);
         layout.Children.Add(icon);
         layout.Children.Add(copy);
         var button = new Button

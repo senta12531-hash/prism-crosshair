@@ -15,6 +15,11 @@ public sealed record Reticle
     public ReticleShape Shape { get; init; } = ReticleShape.Cross;
     public string Color { get; init; } = DefaultColor;
     public int Length { get; init; } = 9;
+    public int? VerticalLength { get; init; }
+    public int Rotation { get; init; }
+    public bool RoundedEnds { get; init; }
+    public bool SquareDot { get; init; }
+    public string OutlineColor { get; init; } = "#000000";
     public int Gap { get; init; } = 5;
     public int Thickness { get; init; } = 2;
     public bool Outline { get; init; } = true;
@@ -30,6 +35,9 @@ public sealed record Reticle
         Shape = Enum.IsDefined(Shape) ? Shape : ReticleShape.Cross,
         Color = NormalizeColor(Color) ?? DefaultColor,
         Length = Math.Clamp(Length, 1, 36),
+        VerticalLength = VerticalLength is int length ? Math.Clamp(length, 1, 36) : null,
+        Rotation = Math.Clamp(Rotation, -180, 180),
+        OutlineColor = NormalizeColor(OutlineColor) ?? "#000000",
         Gap = Math.Clamp(Gap, 0, 24),
         Thickness = Math.Clamp(Thickness, 1, 10),
         OutlineWidth = Math.Clamp(OutlineWidth, 1, 4),
