@@ -43,3 +43,18 @@ Name: "{autodesktop}\Prism Crosshair"; Filename: "{app}\Prism.exe"; WorkingDir: 
 
 [Run]
 Filename: "{app}\Prism.exe"; Description: "{cm:LaunchProgram,Prism Crosshair}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  Command: String;
+  RunKey: String;
+begin
+  if CurUninstallStep <> usPostUninstall then
+    Exit;
+
+  RunKey := 'Software\Microsoft\Windows\CurrentVersion\Run';
+  if RegQueryStringValue(HKCU, RunKey, 'Prism Crosshair', Command) and
+     (CompareText(Command, ExpandConstant('"{app}\Prism.exe" --windows-startup')) = 0) then
+    RegDeleteValue(HKCU, RunKey, 'Prism Crosshair');
+end;

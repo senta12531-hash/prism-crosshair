@@ -67,29 +67,22 @@ public partial class MainWindow : Window
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add("Открыть Prism", null, (_, _) => ShowEditor());
         _trayToggle = (Forms.ToolStripMenuItem)menu.Items.Add("", null, (_, _) => ToggleOverlay());
+        ConfigureTrayProfiles(menu);
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Выход", null, (_, _) => Close());
         _tray = new Forms.NotifyIcon { Icon = _trayIcon, Text = WindowTitle, ContextMenuStrip = menu, Visible = true };
         _tray.DoubleClick += (_, _) => ShowEditor();
         _tray.BalloonTipClicked += (_, _) => ShowEditor();
+        ConfigurePreferences();
 
         _saveDebounce.Tick += (_, _) => PersistSettings();
         _updateTimer.Tick += async (_, _) => await CheckUpdatesAsync(manual: false);
 
         SourceInitialized += (_, _) =>
         {
-            _source = (HwndSource)PresentationSource.FromVisual(this);
-            _source.AddHook(WindowMessages);
+            _source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+            _source?.AddHook(WindowMessages);
             AssignHotkey(_settings.HotkeyModifiers, _settings.HotkeyKey);
-        };
-        Loaded += async (_, _) =>
-        {
-            UpdateOverlayState();
-            if (_settings.CheckUpdates)
-            {
-                _updateTimer.Start();
-                await CheckUpdatesAsync(manual: false);
-            }
         };
         StateChanged += (_, _) =>
         {
@@ -101,6 +94,28 @@ public partial class MainWindow : Window
             if (WindowState == WindowState.Minimized && _settings.MinimizeToTray)
                 Hide();
         };
+    }
+
+    internal void Start()
+    {
+        if (_settings.StartInTray)
+            new WindowInteropHelper(this).EnsureHandle();
+        else
+            Show();
+
+        _settings.OverlayEnabled = _settings.OverlayAtStartup switch
+        {
+            OverlayStartupMode.Enabled => true,
+            OverlayStartupMode.Disabled => false,
+            _ => _settings.OverlayEnabled
+        };
+        UpdateOverlayState();
+
+        if (_settings.CheckUpdates)
+        {
+            _updateTimer.Start();
+            _ = CheckUpdatesAsync(manual: false);
+        }
     }
 
     private IntPtr WindowMessages(IntPtr hwnd, int msg, IntPtr wp, IntPtr lp, ref bool handled)
@@ -132,10 +147,13 @@ public partial class MainWindow : Window
 
     private void ShowPage(FrameworkElement activePanel, Button activeTab)
     {
+        var changed = activePanel.Visibility != Visibility.Visible;
         foreach (var panel in new[] { EditorPanel, ProfilesPanel, SettingsPanel })
             panel.Visibility = panel == activePanel ? Visibility.Visible : Visibility.Collapsed;
         foreach (var tab in new[] { EditorTab, ProfilesTab, SettingsTab })
             tab.Tag = tab == activeTab ? "active" : null;
+        if (changed)
+            AnimateWorkspacePage(activePanel);
     }
 
     private void ShowEditor()

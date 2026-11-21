@@ -3,28 +3,23 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Prism"
         xmlns:chrome="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        Title="Prism Crosshair" Width="1232" Height="754" MinWidth="925" MinHeight="600"
+        Title="Prism Crosshair" Width="1264" Height="806" MinWidth="1010" MinHeight="650"
         WindowStyle="None" ResizeMode="CanResize" WindowStartupLocation="CenterScreen"
         Background="{StaticResource WindowBrush}" Foreground="{StaticResource TextBrush}"
         TextElement.Foreground="{StaticResource TextBrush}" FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="13"
-        Icon="/Assets/Prism.ico" UseLayoutRounding="True" SnapsToDevicePixels="True" KeyDown="WindowKeyDown">
+        Icon="/Assets/Prism.ico" UseLayoutRounding="True" SnapsToDevicePixels="True" KeyDown="WindowKeyDown" PreviewKeyDown="WorkspaceKeyDown" LostMouseCapture="HistoryCaptureLost" Loaded="WorkspaceLoaded">
   <chrome:WindowChrome.WindowChrome>
-    <chrome:WindowChrome CaptionHeight="54" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0"/>
+    <chrome:WindowChrome CaptionHeight="51" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0"/>
   </chrome:WindowChrome.WindowChrome>
 
   <Grid>
-    <Grid.RowDefinitions><RowDefinition Height="55"/><RowDefinition/><RowDefinition Height="38"/></Grid.RowDefinitions>
+    <Grid.RowDefinitions><RowDefinition Height="52"/><RowDefinition/><RowDefinition Height="38"/></Grid.RowDefinitions>
 
     <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1">
       <Grid Margin="25,0,12,0">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-          <TextBlock Text="Prism" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="24" FontWeight="Bold"/>
-          <Ellipse Width="8" Height="8" Fill="{StaticResource AccentBrush}" Margin="8,1,0,0"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" chrome:WindowChrome.IsHitTestVisibleInChrome="True">
-          <Button x:Name="EditorTab" Content="Редактор" Tag="active" Click="EditorClick" Style="{StaticResource NavButton}"/>
-          <Button x:Name="ProfilesTab" Content="Профили" Click="ProfilesClick" Style="{StaticResource NavButton}"/>
-          <Button x:Name="SettingsTab" Content="Настройки" Click="SettingsClick" Style="{StaticResource NavButton}"/>
+          <TextBlock Text="Prism" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="21" FontWeight="Bold"/>
+          <Image Source="/Assets/Prism.ico" Width="23" Height="23" Margin="10,0,0,0" RenderOptions.BitmapScalingMode="HighQuality"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" chrome:WindowChrome.IsHitTestVisibleInChrome="True">
           <Button Style="{StaticResource WindowButton}" Content="&#xE921;" Click="MinimizeClick" ToolTip="Свернуть" AutomationProperties.Name="Свернуть"/>
@@ -34,13 +29,28 @@
       </Grid>
     </Border>
 
-    <Grid Grid.Row="1" Margin="25,18,25,0">
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="82"/><ColumnDefinition/></Grid.ColumnDefinitions>
+      <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,1,0">
+        <StackPanel Margin="8,18">
+          <Button x:Name="EditorTab" Tag="active" Click="EditorClick" Style="{StaticResource NavButton}" AutomationProperties.Name="Редактор">
+            <StackPanel><TextBlock Text="&#xE771;" Style="{StaticResource RailGlyph}"/><TextBlock Text="Редактор" Style="{StaticResource RailLabel}"/></StackPanel>
+          </Button>
+          <Button x:Name="ProfilesTab" Click="ProfilesClick" Style="{StaticResource NavButton}" AutomationProperties.Name="Профили">
+            <StackPanel><TextBlock Text="&#xE8F1;" Style="{StaticResource RailGlyph}"/><TextBlock Text="Профили" Style="{StaticResource RailLabel}"/></StackPanel>
+          </Button>
+          <Button x:Name="SettingsTab" Click="SettingsClick" Style="{StaticResource NavButton}" AutomationProperties.Name="Настройки">
+            <StackPanel><TextBlock Text="&#xE713;" Style="{StaticResource RailGlyph}"/><TextBlock Text="Настройки" Style="{StaticResource RailLabel}"/></StackPanel>
+          </Button>
+        </StackPanel>
+      </Border>
+      <Grid Grid.Column="1" Margin="23,16,23,0">
       <Grid x:Name="EditorPanel">
         <Grid.RowDefinitions><RowDefinition Height="76"/><RowDefinition/></Grid.RowDefinitions>
         <Grid>
           <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
           <StackPanel VerticalAlignment="Top">
-            <TextBlock Text="Редактор прицела" Style="{StaticResource PageHeading}"/>
+            <TextBlock Text="Прицел" Style="{StaticResource PageHeading}"/>
             <TextBlock x:Name="ProfileCaption" Foreground="{StaticResource MutedBrush}" FontSize="14" Margin="2,0,0,0"/>
           </StackPanel>
           <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,12">
@@ -58,10 +68,10 @@
         </Grid>
 
         <Grid Grid.Row="1">
-          <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="14"/><ColumnDefinition Width="340"/></Grid.ColumnDefinitions>
+          <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="15"/><ColumnDefinition Width="345"/></Grid.ColumnDefinitions>
           <Border Style="{StaticResource Panel}" Padding="0">
             <Grid>
-              <Grid.RowDefinitions><RowDefinition Height="48"/><RowDefinition/><RowDefinition Height="52"/></Grid.RowDefinitions>
+              <Grid.RowDefinitions><RowDefinition Height="49"/><RowDefinition/><RowDefinition Height="51"/><RowDefinition Height="64"/></Grid.RowDefinitions>
               <DockPanel Margin="14,0">
             <Border DockPanel.Dock="Right" VerticalAlignment="Center" Padding="10,7" Style="{StaticResource StageChip}">
               <StackPanel Orientation="Horizontal">
@@ -69,7 +79,13 @@
                 <TextBlock x:Name="FooterOverlayStatus" FontSize="12" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
               </StackPanel>
             </Border>
-                <TextBlock Text="Холст" Style="{StaticResource SectionHeading}" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="Предпросмотр" Style="{StaticResource SectionHeading}" VerticalAlignment="Center" Margin="0,0,13,0"/>
+                  <Button x:Name="UndoButton" IsEnabled="False" Content="&#xE7A7;" Style="{StaticResource IconButton}" Click="UndoClick"
+                          AutomationProperties.Name="Отменить изменение" ToolTip="Отменить изменение · Ctrl + Z" Width="32" Margin="0,0,4,0"/>
+                  <Button x:Name="RedoButton" IsEnabled="False" Content="&#xE7A6;" Style="{StaticResource IconButton}" Click="RedoClick"
+                          AutomationProperties.Name="Повторить изменение" ToolTip="Повторить изменение · Ctrl + Y" Width="32"/>
+                </StackPanel>
               </DockPanel>
               <local:PreviewSurface Grid.Row="1" x:Name="Preview" ClipToBounds="True" IsHitTestVisible="False"/>
               <DockPanel Grid.Row="2" Margin="14,0" LastChildFill="False">
@@ -77,7 +93,10 @@
               <StackPanel Orientation="Horizontal" Margin="2">
                 <Button x:Name="ZoomOut" Content="−" Width="27" MinHeight="27" Padding="0" BorderThickness="0" Background="Transparent"
                         Click="ZoomOutClick" AutomationProperties.Name="Уменьшить масштаб"/>
-                <TextBlock x:Name="ZoomLabel" Width="36" TextAlignment="Center" VerticalAlignment="Center" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="14"/>
+                <Button x:Name="ActualSizeButton" Width="38" BorderThickness="0" Background="Transparent" Padding="0" MinHeight="27" Click="ActualSizeClick"
+                        AutomationProperties.Name="Показать в реальном размере" ToolTip="Показать в реальном размере · 1:1">
+                  <TextBlock x:Name="ZoomLabel" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="14"/>
+                </Button>
                 <Button x:Name="ZoomIn" Content="+" Width="27" MinHeight="27" Padding="0" BorderThickness="0" Background="Transparent"
                         Click="ZoomInClick" AutomationProperties.Name="Увеличить масштаб"/>
               </StackPanel>
@@ -85,7 +104,23 @@
                 <TextBlock DockPanel.Dock="Left" Text="Фон" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
             <ComboBox x:Name="SceneBox" DockPanel.Dock="Left" VerticalAlignment="Center" Width="142" MinHeight="32" Margin="8,0,0,0"
                       Background="{StaticResource PanelBrush}" SelectionChanged="PreviewChanged" AutomationProperties.Name="Фон предпросмотра"/>
+                              <Button x:Name="GuideButton" DockPanel.Dock="Left" Content="Разметка" Tag="selected" Click="GuidesClick" ToolTip="Показать или скрыть сетку и линейки" VerticalAlignment="Center" MinHeight="32" Margin="7,0,0,0"/>
+                <Button x:Name="CompareButton" DockPanel.Dock="Left" Content="До / Сейчас" IsEnabled="False" Click="CompareClick" ToolTip="Сравнить с предыдущим состоянием" VerticalAlignment="Center" MinHeight="32" Margin="6,0,0,0"/>
               </DockPanel>
+              <Border Grid.Row="3" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Padding="13,0">
+                <DockPanel>
+                  <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE72A;" Width="32" VerticalAlignment="Center"
+                          Click="NextTipClick" AutomationProperties.Name="Следующая подсказка" ToolTip="Следующая подсказка"/>
+                  <Button DockPanel.Dock="Left" Width="47" Height="44" BorderThickness="0" Background="Transparent" Padding="0"
+                          VerticalAlignment="Center" Click="NextTipClick" AutomationProperties.Name="Пиксель. Следующая подсказка" Margin="0,0,9,0">
+                    <local:PixelGuide x:Name="Pixel" Width="41" Height="39"/>
+                  </Button>
+                  <StackPanel VerticalAlignment="Center" Margin="0,0,7,0">
+                    <TextBlock Text="Пиксель" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
+                    <TextBlock x:Name="TipText" Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" Margin="0,3,0,0"/>
+                  </StackPanel>
+                </DockPanel>
+              </Border>
             </Grid>
           </Border>
           <Border Grid.Column="2" Style="{StaticResource Panel}">
@@ -105,7 +140,7 @@
           <Border x:Name="ShapeDetails" Style="{StaticResource InspectorDetail}">
         <StackPanel>
           <TextBlock Text="Вид метки" Style="{StaticResource Caption}" Margin="0,0,0,8"/>
-          <UniformGrid x:Name="ShapeButtons" Columns="5" Rows="1" Margin="-3,0,-3,0"/>
+          <UniformGrid x:Name="ShapeButtons" Columns="4" Margin="-3,0,-3,0"/>
           <CheckBox x:Name="DotToggle" Content="Центральная точка" Checked="DotChanged" Unchecked="DotChanged" Margin="0,6,0,0"/>
             <CheckBox x:Name="SquareToggle" Content="Квадратная точка" Checked="DetailChanged" Unchecked="DetailChanged"/>
             <CheckBox x:Name="RoundToggle" Content="Скруглить концы лучей" Checked="DetailChanged" Unchecked="DetailChanged"/>
@@ -188,17 +223,7 @@
       </Grid>
 
       <Grid x:Name="ProfilesPanel" Visibility="Collapsed">
-        <Grid.RowDefinitions><RowDefinition Height="78"/><RowDefinition/></Grid.RowDefinitions>
-        <DockPanel>
-          <Button DockPanel.Dock="Right" Content="Сохранить текущий прицел" Tag="primary" Click="SavePresetClick" MinHeight="42" VerticalAlignment="Center"/>
-          <StackPanel>
-            <TextBlock Text="Профили" Style="{StaticResource PageHeading}"/>
-            <TextBlock Text="Выберите готовый прицел или сохраните свой." Foreground="{StaticResource MutedBrush}" FontSize="14" Margin="2,0,0,0"/>
-          </StackPanel>
-        </DockPanel>
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-          <WrapPanel x:Name="PresetCards" Orientation="Horizontal"/>
-        </ScrollViewer>
+        <Grid x:Name="ProfilesHost"/>
       </Grid>
 
       <Grid x:Name="SettingsPanel" Visibility="Collapsed">
@@ -232,7 +257,11 @@
                 <CheckBox x:Name="TrayToggle" Content="Сворачивать в системный трей" Checked="TrayPreferenceChanged" Unchecked="TrayPreferenceChanged"/>
               </StackPanel>
             </Border>
-            <Border Grid.Column="2" Style="{StaticResource Panel}" VerticalAlignment="Top" Padding="19">
+            <StackPanel Grid.Column="2">
+              <Border Style="{StaticResource Panel}" Padding="19" Margin="0,0,0,12">
+                <StackPanel x:Name="PreferencesHost"/>
+              </Border>
+              <Border Style="{StaticResource Panel}" Padding="19">
               <StackPanel>
                 <DockPanel Margin="0,0,0,12">
                   <TextBlock x:Name="SettingsVersion" DockPanel.Dock="Right" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
@@ -245,13 +274,15 @@
                   <Button x:Name="ReleaseButton" Content="GitHub ↗" Click="OpenReleaseClick" Margin="0,0,0,4"/>
                 </WrapPanel>
               </StackPanel>
-            </Border>
+              </Border>
+            </StackPanel>
           </Grid>
         </ScrollViewer>
       </Grid>
+      </Grid>
     </Grid>
 
-    <DockPanel Grid.Row="2" Margin="27,0" LastChildFill="True">
+    <DockPanel Grid.Row="2" Margin="102,0,23,0" LastChildFill="True">
       <Button x:Name="UpdateAvailable" DockPanel.Dock="Right" Visibility="Collapsed" Click="OpenReleaseClick" VerticalAlignment="Center"
               MinHeight="28" Margin="8,0,0,0" Tag="primary"/>
       <TextBlock x:Name="FooterVersion" DockPanel.Dock="Right" Style="{StaticResource Caption}" FontFamily="Cascadia Mono, Consolas" VerticalAlignment="Center"/>
